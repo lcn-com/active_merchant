@@ -2,3 +2,5 @@
 *.orig
 *.swp
 *.swo
+test/fixtures.yml
+.gitignore
