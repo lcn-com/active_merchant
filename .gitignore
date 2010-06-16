@@ -3,4 +3,4 @@
 *.swp
 *.swo
 test/fixtures.yml
-.gitignore
+.gitconfig
