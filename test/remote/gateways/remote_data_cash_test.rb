@@ -70,21 +70,17 @@ class RemoteDataCashTest < Test::Unit::TestCase
   # Testing that we can successfully make a purchase in a one step
   # operation
   def test_successful_purchase
-
     response = @gateway.purchase(@amount, @visa_delta, @params)
     assert_success response
     assert response.test?
-
   end
 
   #the amount is changed to £1.99 - the DC test server won't check the
   #address details - this is more a check on the passed ExtendedPolicy
   def test_successful_purchase_without_address_check
-
     response = @gateway.purchase(199, @visa_delta, @params)
     assert_success response
     assert response.test?
-
   end
 
   # Note the Datacash test server regularly times out on switch requests
@@ -92,14 +88,12 @@ class RemoteDataCashTest < Test::Unit::TestCase
     response = @gateway.purchase(@amount, @solo, @params)
     assert_success response
     assert response.test?
-
   end
 
   # this card number won't check the address details - testing extended
   # policy
   def test_successful_purchase_without_address_check2
     @solo.number = '633499110000000003'
-
     response = @gateway.purchase(@amount, @solo, @params)
     assert_success response
     assert response.test?
@@ -108,12 +102,10 @@ class RemoteDataCashTest < Test::Unit::TestCase
 
   # Testing purchase with request to set up recurring payment account
   def test_successful_purchase_without_account_set_up_and_repeat_payments
-
     response = @gateway.purchase(@amount, @visa_delta, @params)
     assert_success response
     assert response.authorization.to_s.split(';')[2].blank?
     assert response.test?
-
   end
 
   # We dont need to run repeat payments test
@@ -160,7 +152,6 @@ class RemoteDataCashTest < Test::Unit::TestCase
 
   def test_successful_authorization_and_capture_with_account_set_up_and_second_purchase
     #Authorize first payment
-
     @params[:set_up_continuous_authority] = true
     first_authorization = @gateway.authorize(@amount, @visa_delta, @params)
     assert_success first_authorization
@@ -181,7 +172,6 @@ class RemoteDataCashTest < Test::Unit::TestCase
   end
 
   def test_duplicate_order_id
-
     response = @gateway.purchase(@amount, @visa_delta, @params)
     assert_success response
 
@@ -189,7 +179,6 @@ class RemoteDataCashTest < Test::Unit::TestCase
     assert_failure duplicate_response
     assert_equal 'Duplicate reference', duplicate_response.message
     assert duplicate_response.test?
-
   end
 
   def test_invalid_verification_number
@@ -198,40 +187,32 @@ class RemoteDataCashTest < Test::Unit::TestCase
     assert_failure response
     assert_equal 'CV2AVS DECLINED', response.message
     assert response.test?
-
   end
 
   def test_invalid_expiry_month
-
     @visa_delta.month = 13
     response = @gateway.purchase(@amount, @visa_delta, @params)
     assert_failure response
     assert_equal 'Expiry date invalid', response.message
     assert response.test?
-
   end
 
   def test_invalid_expiry_year
-
     @visa_delta.year = 1999
     response = @gateway.purchase(@amount, @visa_delta, @params)
     assert_failure response
     assert_equal 'Card has already expired', response.message
     assert response.test?
-
   end
 
   def test_declined_card
-
     response = @gateway.purchase(@amount, @mastercard_declined, @params)
     assert_failure response
     assert_equal 'DECLINED', response.message
     assert response.test?
-
   end
 
   def test_successful_authorization_and_capture
-
     authorization = @gateway.authorize(@amount, @visa_delta, @params)
     assert_success authorization
     assert authorization.test?
@@ -239,7 +220,6 @@ class RemoteDataCashTest < Test::Unit::TestCase
     capture = @gateway.capture(@amount, authorization.authorization, @params)
     assert_success capture
     assert capture.test?
-
   end
 
   def test_unsuccessful_capture
@@ -247,11 +227,9 @@ class RemoteDataCashTest < Test::Unit::TestCase
     assert_failure response
     assert_equal 'AUTHCODE field required', response.message
     assert response.test?
-
   end
 
   def test_successful_authorization_and_void
-
     authorization = @gateway.authorize(@amount, @visa_delta, @params)
     assert_success authorization
     assert authorization.test?
@@ -259,11 +237,9 @@ class RemoteDataCashTest < Test::Unit::TestCase
     void = @gateway.void(authorization.authorization, @params)
     assert_success void
     assert void.test?
-
   end
 
   def test_successfully_purchase_and_void
-
     purchase = @gateway.purchase(@amount, @visa_delta, @params)
     assert_success purchase
     assert purchase.test?
@@ -271,23 +247,19 @@ class RemoteDataCashTest < Test::Unit::TestCase
     void = @gateway.void(purchase.authorization, @params)
     assert_success void
     assert void.test?
-
   end
 
 
   def test_successful_refund
-
     response = @gateway.credit(@amount, @visa_delta, @params)
     assert_success response
     assert !response.params['datacash_reference'].blank?
     assert !response.params['merchantreference'].blank?
 
     assert response.test?
-
   end
 
   def test_successful_transaction_refund
-
     purchase = @gateway.purchase(@amount, @visa_delta, @params)
     assert_success purchase
     assert purchase.test?
@@ -298,11 +270,9 @@ class RemoteDataCashTest < Test::Unit::TestCase
     assert !refund.params['merchantreference'].blank?
 
     assert refund.test?
-
   end
 
   def test_successful_transaction_refund_with_money_set_to_nil
-
     purchase = @gateway.purchase(@amount, @visa_delta, @params)
     assert_success purchase
     assert purchase.test?
@@ -310,11 +280,9 @@ class RemoteDataCashTest < Test::Unit::TestCase
     refund = @gateway.credit(nil, purchase.params['datacash_reference'])
     assert_success refund
     assert refund.test?
-
   end
 
   def test_successful_transaction_refund_in_two_stages
-
     purchase = @gateway.purchase(@amount, @visa_delta, @params)
     assert_success purchase
     assert purchase.test?
@@ -326,11 +294,9 @@ class RemoteDataCashTest < Test::Unit::TestCase
     second_partial_refund = @gateway.credit(98, purchase.params['datacash_reference'])
     assert_success second_partial_refund
     assert second_partial_refund.test?
-
   end
 
   def test_successful_partial_transaction_refund
-
     purchase = @gateway.purchase(@amount, @visa_delta, @params)
     assert_success purchase
     assert purchase.test?
@@ -338,11 +304,9 @@ class RemoteDataCashTest < Test::Unit::TestCase
     partial_refund = @gateway.credit(100, purchase.params['datacash_reference'])
     assert_success partial_refund
     assert partial_refund.test?
-
   end
 
   def test_fail_to_refund_too_much
-
     purchase = @gateway.purchase(@amount, @visa_delta, @params)
     assert_success purchase
     assert purchase.test?
@@ -351,7 +315,6 @@ class RemoteDataCashTest < Test::Unit::TestCase
     assert_failure refund_too_much
     assert_equal 'Refund amount > orig 1.98', refund_too_much.message
     assert refund_too_much.test?
-
   end
 
   def test_fail_to_refund_with_declined_purchase_reference
@@ -363,11 +326,9 @@ class RemoteDataCashTest < Test::Unit::TestCase
     assert_failure refund
     assert_equal 'Cannot refund transaction', refund.message
     assert refund.test?
-
   end
 
   def test_fail_to_refund_purchase_which_is_already_refunded
-
     purchase = @gateway.purchase(@amount, @visa_delta, @params)
     assert_success purchase
     assert purchase.test?
@@ -380,27 +341,48 @@ class RemoteDataCashTest < Test::Unit::TestCase
     assert_failure second_refund
     assert_equal '1.98 > remaining funds 0.00', second_refund.message
     assert second_refund.test?
-
   end
 
   # Check short merchant references are reformatted
   def test_merchant_reference_that_is_too_short
-
     @params[:order_id] = @params[:order_id].first(5)
     response = @gateway.purchase(@amount, @visa_delta, @params)
     assert_success response
     assert response.test?
-
   end
 
   # Check long merchant references are reformatted
   def test_merchant_reference_that_is_too_long
-
     @params[:order_id] =  "#{@params[:order_id]}1234356"
     response = @gateway.purchase(@amount, @visa_delta, @params)
     assert_success response
     assert response.test?
+  end
+  
+  def test_successful_threedsecure_authorization_and_capture
+    authorization = @gateway.authorize(@amount, @visa_delta, @params)
+    assert_success authorization
+    assert authorization.test?
 
+    threedsecure_authorization = @gateway.threedsecure_authorize(authorization.params['datacash_reference'])
+    assert threedsecure_authorization.test?
+
+    capture = @gateway.capture(@amount, authorization.authorization, @params)
+    assert_success capture
+    assert capture.test?
+  end
+  
+  def test_successful_threedsecure_authorization_and_void
+    authorization = @gateway.authorize(@amount, @visa_delta, @params)
+    assert_success authorization
+    assert authorization.test?
+    
+    threedsecure_authorization = @gateway.threedsecure_authorize(authorization.params['datacash_reference'])
+    assert threedsecure_authorization.test?
+
+    void = @gateway.void(authorization.authorization, @params)
+    assert_success void
+    assert void.test?
   end
 
 end
