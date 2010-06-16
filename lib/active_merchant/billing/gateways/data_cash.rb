@@ -128,6 +128,18 @@ module ActiveMerchant
         commit(request)
       end
 
+      def threedsecure_authorize(authorization)
+        request = threedsecure_authorization_request(authorization)
+
+        commit(request)
+      end
+
+      def threedsecure_verify(authorization, pares_message)
+        request = threedsecure_authorization_request(authorization, pares_message)
+
+        commit(request)
+      end
+
       # Refund to a card
       # 
       # ==== Parameters
@@ -152,7 +164,28 @@ module ActiveMerchant
         @options[:test] || super
       end
 
-      private                         
+      private
+
+      def threedsecure_authorization_request(reference, pares_message = nil)
+        xml = Builder::XmlMarkup.new :indent => 2
+        xml.instruct!
+        xml.tag! :Request do
+          add_authentication(xml)
+          xml.tag! :Transaction do
+            xml.tag! :HistoricTxn do
+              xml.tag! :reference, reference
+              xml.tag! :method, 'threedsecure_authorization_request'
+              if pares_message
+                xml.tag! :pares_message, pares_message
+              end
+            end
+
+          end
+        end
+        xml.target!
+
+      end
+
       # Create the xml document for a 'cancel' or 'fulfill' transaction.
       # 
       # Final XML should look like:
@@ -288,7 +321,22 @@ module ActiveMerchant
             xml.tag! :TxnDetails do
               xml.tag! :merchantreference, format_reference_number(options[:order_id])
               xml.tag! :amount, amount(money), :currency => options[:currency] || currency(money)
-              xml.tag! :capturemethod, "ecomm"
+              xml.tag! :capturemethod, (options[:threedsecure] ? "ecomm" : "cnp")
+
+              if options[:threedsecure]
+                xml.tag! :ThreeDSecure do
+                  xml.tag! :purchase_datetime, Time.now.strftime("%Y%m%d %H:%M:%S")
+                  xml.tag! :purchase_desc, options[:threedsecure][:purchase_desc]
+                  xml.tag! :verify, 'yes'
+                  xml.tag! :merchant_url, options[:threedsecure][:merchant_url]
+                  xml.tag! :Browser do
+                    xml.tag! :device_category, options[:threedsecure][:device_category]
+                    xml.tag! :user_agent, options[:threedsecure][:user_agent]
+                    xml.tag! :accept_headers, options[:threedsecure][:accept_headers]
+                  end
+                end
+              end
+
             end
           end
         end
